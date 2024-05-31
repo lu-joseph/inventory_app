@@ -2,6 +2,10 @@
   text-align: center;
 }
 
+.selector-for-some-widget {
+  box-sizing: content-box;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
