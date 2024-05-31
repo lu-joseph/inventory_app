@@ -78,7 +78,7 @@ app.put("/purchase/:item_name/:num_sold", async (req, resp) => {
   });
 });
 
-app.get("/", (req, resp) => {
+app.get("/", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../inventory_app/build", "index.html"));
 });
 
