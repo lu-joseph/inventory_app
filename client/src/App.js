@@ -142,11 +142,27 @@ function App() {
   return (
     <div className="App">
       <div className="container">
-        <Group type="Tote Bag" />
-        <Group type="Memopad" />
-        <Group type="Stickersheet" />
-        <Group type="Print" />
-        <Group type="Keychain" />
+        <Group
+          type="Tote Bag"
+          cards={selectedItems}
+          setCards={setSelectedItems}
+        />
+        <Group
+          type="Memopad"
+          cards={selectedItems}
+          setCards={setSelectedItems}
+        />
+        <Group
+          type="Stickersheet"
+          cards={selectedItems}
+          setCards={setSelectedItems}
+        />
+        <Group type="Print" cards={selectedItems} setCards={setSelectedItems} />
+        <Group
+          type="Keychain"
+          cards={selectedItems}
+          setCards={setSelectedItems}
+        />
         <div className="row">
           <div className="col">
             <Button

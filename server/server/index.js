@@ -84,12 +84,12 @@ app.put("/purchase", async (req, resp) => {
   items.forEach(async (product) => {
     const numSold = parseInt(product.numItems);
     if (numSold > 0) {
-      const itemName = product.name;
       const costPerItem = parseInt(product.costPerItem);
-      const searchResults = await getPageByProductName(itemName);
+      const searchResults = await getPageByProductId(product.id);
       const result = searchResults.results
         ? searchResults.results[0]
         : undefined;
+      console.log(result.properties["Product name"].title);
       const pageId = result.id;
       const updateResponse = await notion.pages.update({
         page_id: pageId,
@@ -100,7 +100,6 @@ app.put("/purchase", async (req, resp) => {
           },
         },
       });
-      console.log(`${itemName}: update response: ${updateResponse}`);
       const createResponse = await notion.pages.create({
         parent: {
           type: "database_id",
@@ -111,7 +110,8 @@ app.put("/purchase", async (req, resp) => {
             title: [
               {
                 text: {
-                  content: itemName,
+                  content:
+                    result.properties["Product name"].title[0].plain_text,
                 },
               },
             ],
@@ -130,11 +130,10 @@ app.put("/purchase", async (req, resp) => {
           },
           ProductID: {
             type: "number",
-            number: result.properties["ID"].unique_id.number,
+            number: product.id,
           },
         },
       });
-      console.log(`${itemName}: create response: ${createResponse}`);
     }
   });
   resp.send({ data: "response" });
