@@ -40,3 +40,14 @@
     transform: rotate(360deg);
   }
 }
+
+.product-card {
+  background-color: #61dafb;
+  padding: 1em;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.quantity-change {
+  margin: 0.5em;
+}
