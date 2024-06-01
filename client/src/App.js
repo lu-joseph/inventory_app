@@ -4,36 +4,79 @@ import { useState, useEffect } from "react";
 
 const defaultHeader = { "Content-Type": "application/json" };
 
-// Card: {name: string, numItems: number, costPerItem: number}
+// Card: {id: number, numItems: number, costPerItem: number}
 
-function ProductCard(props) {
-  // props: {name: string, cards: [Card], setCards: () => void}
-  const [cost, setCost] = useState(0);
-  const [numSelected, setNumSelected] = useState(0);
+// props: {type: string, cards: [Card], setCards: () => void}
+function Group(props) {
+  const [productIDs, setProductIDs] = useState([]);
+  const [showGroup, setShowGroup] = useState(false);
+
   useEffect(() => {
-    fetch("/cost/" + props.name, {
+    fetch("/products/type/" + props.type.replaceAll(" ", "_"), {
       method: "GET",
       headers: defaultHeader,
     })
       .then((res) => res.json())
       .then((data) => {
-        setCost(data.price);
+        setProductIDs(
+          data.results.map((x) => x.properties["ID"].unique_id.number)
+        );
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <>
+      <div className="row m-4">
+        <Button onClick={() => setShowGroup(!showGroup)}>
+          <h1>{props.type}</h1>
+        </Button>
+      </div>
+      {/* {showGroup && } */}
+      <div
+        className="row row-cols-auto m-4"
+        style={{ display: showGroup ? "block" : "none" }}
+      >
+        {productIDs.map((x) => {
+          return (
+            <ProductCard
+              id={x}
+              cards={props.cards}
+              setCards={props.setCards}
+              type={props.type}
+            />
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function ProductCard(props) {
+  // props: {id: number, type: string, cards: [Card], setCards: () => void}
+  const [defaultCost, setDefaultCost] = useState(0);
+  const [product, setProduct] = useState(null);
+  const [cost, setCost] = useState(0);
+  const [numSelected, setNumSelected] = useState(0);
+
+  useEffect(() => {
+    fetch("/products/id/" + props.id, {
+      method: "GET",
+      headers: defaultHeader,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.results.length === 1) {
+          setProduct(data.results[0].properties);
+          setDefaultCost(data.results[0].properties.Price.number);
+          setCost(data.results[0].properties.Price.number);
+        }
+      });
   }, []);
 
   useEffect(() => {
-    if (props.cards.length === 0) {
-      console.log("resetting");
+    if (props.cards && props.cards.length === 0) {
       setNumSelected(0);
-      fetch("/cost/" + props.name, {
-        method: "GET",
-        headers: defaultHeader,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setCost(data.price);
-        });
+      setCost(defaultCost);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.cards]);
@@ -41,20 +84,19 @@ function ProductCard(props) {
   const setCards = props.setCards;
 
   useEffect(() => {
-    setCards(
-      props.cards
-        .filter((val) => val.name !== props.name)
-        .concat([
-          { name: props.name, numItems: numSelected, costPerItem: cost },
-        ])
-    );
+    if (props.cards) {
+      setCards(
+        props.cards
+          .filter((val) => val.id !== props.id)
+          .concat([{ id: props.id, numItems: numSelected, costPerItem: cost }])
+      );
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cost, numSelected]);
 
   return (
-    <div className="col-sm">
+    <div className="col-sm align-middle">
       <div className="product-card">
-        {/* <h3>Cost: ${cost}</h3> */}
         <div className="input-group mb-3">
           <span className="input-group-text">$</span>
           <input
@@ -67,32 +109,28 @@ function ProductCard(props) {
                 e.target.value
                   .split("")
                   .filter((char) => !isNaN(parseInt(char)))
-                  .join("")
+                  .join("") ?? 0
               );
             }}
           />
         </div>
         <h3>
-          {props.name.replaceAll("_", " ")} {props.type}
+          {product && product["Product name"].title[0].plain_text} {props.type}
         </h3>
-        <div className="container">
-          <div className="row">
-            <div className="col">
-              <Button
-                className="quantity-change"
-                onClick={() => setNumSelected(Math.max(numSelected - 1, 0))}
-              >
-                -
-              </Button>
-              {numSelected}
-              <Button
-                className="quantity-change"
-                onClick={() => setNumSelected(numSelected + 1)}
-              >
-                +
-              </Button>
-            </div>
-          </div>
+        <div className="selection-container">
+          <Button
+            className="quantity-change"
+            onClick={() => setNumSelected(Math.max(numSelected - 1, 0))}
+          >
+            -
+          </Button>
+          {numSelected}
+          <Button
+            className="quantity-change"
+            onClick={() => setNumSelected(numSelected + 1)}
+          >
+            +
+          </Button>
         </div>
       </div>
     </div>
@@ -104,49 +142,11 @@ function App() {
   return (
     <div className="App">
       <div className="container">
-        <div className="row">
-          <h1>Totes</h1>
-        </div>
-      </div>
-      <div className="container">
-        <div className="row">
-          <ProductCard
-            name="Rockstar_tour"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-          <ProductCard
-            name="Star_girls"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-          <ProductCard
-            name="Digital_nostalgia"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-          <ProductCard
-            name="Angel_bathtub"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-          <ProductCard
-            name="Roommates"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-          <ProductCard
-            name="Mona_pals"
-            type="tote"
-            cards={selectedItems}
-            setCards={setSelectedItems}
-          ></ProductCard>
-        </div>
+        <Group type="Tote Bag" />
+        <Group type="Memopad" />
+        <Group type="Stickersheet" />
+        <Group type="Print" />
+        <Group type="Keychain" />
         <div className="row">
           <div className="col">
             <Button

@@ -15,22 +15,41 @@ const notion = new Client({
 // Have Node serve the files for our built React app
 app.use(express.static(path.resolve(__dirname, "../../client/build")));
 
-// productName has underscore
-async function getPageByProductName(productName) {
+async function getPageByProductId(productId) {
   return await notion.databases.query({
     database_id: process.env.NOTION_PRODUCT_DB_ID,
     filter: {
-      property: "Product name",
-      rich_text: {
-        equals: productName.replaceAll("_", " "),
+      property: "ID",
+      unique_id: {
+        equals: parseInt(productId),
       },
     },
   });
 }
 
-app.get("/cost/:item_name", async (req, resp) => {
-  const itemName = req.params.item_name.replaceAll("_", " ");
-  const searchResults = await getPageByProductName(itemName);
+app.get("/products/id/:id", async (req, resp) => {
+  const id = req.params.id;
+  const response = await getPageByProductId(id);
+  resp.send(response);
+});
+
+app.get("/products/type/:type", async (req, resp) => {
+  const type = req.params.type.replaceAll("_", " ");
+  const response = await notion.databases.query({
+    database_id: process.env.NOTION_PRODUCT_DB_ID,
+    filter: {
+      property: "Type",
+      multi_select: {
+        contains: type,
+      },
+    },
+  });
+  resp.send(response);
+});
+
+app.get("/cost/:product_id", async (req, resp) => {
+  const productId = req.params.product_id;
+  const searchResults = await getPageByProductId(productId);
   const result = searchResults.results ? searchResults.results[0] : undefined;
   // console.log(result);
   const cost = result ? result.properties["Price"].number : 0;

@@ -51,3 +51,8 @@
 .quantity-change {
   margin: 0.5em;
 }
+
+.selection-container {
+  display: inline-block;
+  white-space: nowrap;
+}
