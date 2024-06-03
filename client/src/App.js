@@ -163,6 +163,12 @@ function App() {
           cards={selectedItems}
           setCards={setSelectedItems}
         />
+        <Group
+          type="Sticker"
+          cards={selectedItems}
+          setCards={setSelectedItems}
+        />
+        <Group type="Misc" cards={selectedItems} setCards={setSelectedItems} />
         <div className="row">
           <div className="col">
             <Button
