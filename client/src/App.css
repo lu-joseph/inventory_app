@@ -56,3 +56,7 @@
   display: inline-block;
   white-space: nowrap;
 }
+
+.cart-item {
+  margin: 1em;
+}
